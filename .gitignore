@@ -6,7 +6,13 @@ env/
 
 # Cache
 __pycache__
+.mypy_cache
+.pytest_cache
 
 
 # Data files
 *.txt
+
+
+# Logfiles
+*.log

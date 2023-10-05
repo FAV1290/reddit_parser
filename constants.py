@@ -17,3 +17,6 @@ CLEAR_SCREEN_COMMANDS_MAP = {
 SUBMISSION_TITLES_FILEPATH = 'submission_titles.txt'
 SUBMISSION_AUTHORS_FILEPATH = 'submission_authors.txt'
 COMMENT_AUTHORS_FILEPATH = 'comment_authors.txt'
+SLEEP_TIME_SEC = 0.8
+LOGGING_FORMAT = '%(asctime)s - [%(levelname)s] - %(message)s'
+LOGFILE_FILEPATH = 'reddit_parser.log'

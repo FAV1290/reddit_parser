@@ -1,4 +1,5 @@
 import time
+import logging
 import praw.models
 import praw.models.reddit.more
 import praw.models.reddit.comment
@@ -6,7 +7,11 @@ import collections
 import tqdm
 
 
-from constants import CUT_OFF_TIME_DAYS, SECONDS_IN_DAY
+from constants import (
+    CUT_OFF_TIME_DAYS, SECONDS_IN_DAY, SLEEP_TIME_SEC, LOGGING_FORMAT, LOGFILE_FILEPATH)
+
+
+logging.basicConfig(filename=LOGFILE_FILEPATH, level=logging.INFO, format=LOGGING_FORMAT)
 
 
 def create_submissions_list(
@@ -26,50 +31,49 @@ def create_submissions_list(
 def create_submission_authors_list(
     submissions_list: list[praw.models.Submission],
 ) -> list[tuple[str, int]]:
-    submission_authors = [submission.author.name for submission in submissions_list]
+    submission_authors = [
+        submission.author.name for submission in submissions_list if submission.author is not None]
     submission_authors_list = collections.Counter(submission_authors)
     return submission_authors_list.most_common()
 
 
 def flatten_comments_list(
     comments_list: list[praw.models.reddit.comment.Comment | praw.models.reddit.more.MoreComments],
-    progress_bar: bool = False,
 ) -> list[praw.models.reddit.comment.Comment]:
     flat_comments_list = []
-    comments_list_tqdm = tqdm.tqdm(
-        comments_list,
-        ncols=80,
-        disable=not progress_bar,
-        bar_format='{desc}: {percentage:3.0f}%|{bar} {n_fmt}/{total_fmt}'
-    )
-    for comment in comments_list_tqdm:
-        if type(comment) == praw.models.reddit.comment.Comment:
+    for comment in comments_list:
+        if isinstance(comment, praw.models.reddit.comment.Comment):
             flat_comments_list.append(comment)
         else:
-            time.sleep(1)
+            time.sleep(SLEEP_TIME_SEC)
             flat_comments_list = flat_comments_list + flatten_comments_list(comment.comments())
     return flat_comments_list
         
 
 def create_comment_authors_list(
     submissions_list: list[praw.models.Submission],
-    prints_on: bool = True,
 ) -> list[tuple[str, int]]:
     comment_authors = []
     comments_parsed = 0
-    for num, submission in enumerate(submissions_list, start=1):
-        if prints_on:
-            print(f'Parsing submission #{num}: {submission.title}')
-        comments_list = flatten_comments_list(submission.comments.list(), progress_bar=prints_on)
+    submission_num = 0
+    submissions_list_tqdm = tqdm.tqdm(
+        submissions_list,
+        ncols=80,
+        bar_format='{desc}: {percentage:3.0f}%|{bar} {n_fmt}/{total_fmt}'
+    )
+    logging.info(f'\n{"-"*50}\nComments parsing starts\n{"-"*50}')
+    for submission in submissions_list_tqdm:
+        submission_num += 1
+        logging.info(f'Parsing submission #{submission_num}: {submission.title}')
+        comments_list = flatten_comments_list(submission.comments.list())
         for comment in comments_list:
             if comment.author is not None:
                 comment_authors.append(comment.author)
-        if prints_on:
-            parsed_submission_report = [
-                f'{len(comment_authors) - comments_parsed} comment(s) parsed from submission ',
-                f'({len(comment_authors)} comment(s) total)\n'
-            ]
-            print(''.join(parsed_submission_report))
+        parsed_submission_report = [
+            f'{len(comment_authors) - comments_parsed} comment(s) parsed ',
+            f'({len(comment_authors)} comment(s) total)\n'
+        ]
+        logging.info(''.join(parsed_submission_report))
         comments_parsed = len(comment_authors)
     comment_authors_counter = collections.Counter(comment_authors)
     return comment_authors_counter.most_common()

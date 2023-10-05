@@ -14,21 +14,28 @@ def clear_screen() -> None:
     os.system(CLEAR_SCREEN_COMMANDS_MAP.get(os.name, ''))
 
 
+def print_execution_time(execution_time: float | None) -> None:
+    if execution_time is None:
+        print(f"Can't calculate execution time due incorrect arguments or their odd quantity")
+    else:
+        print(f'Script execution time: {"{:.2f}".format(execution_time)} second(s)')
+
+
 def print_submissions_titles(
     submissions_list: list[praw.models.Submission], 
-    limit: int | None = None
+    limit: int | None = None,
 ) -> None:
-    subreddit_name = submissions_list[0].subreddit.display_name
+    try:
+        subreddit_name = submissions_list[0].subreddit.display_name
+    except IndexError:
+        print(f'Sorry, but recent submissions in subreddit were not found...')
+        return
     submissions_report = [
         f'{len(submissions_list)} submissions were found in {subreddit_name} subreddit.',
         f'Titles of {limit} are shown here, full list in {SUBMISSION_TITLES_FILEPATH}:\n',
     ]
-    if not len(submissions_list):
-        print('Sorry, but recent submissions in {subreddit were not found...')
-        return
-    if limit is None or limit > len(submissions_list):
-        limit = len(submissions_list)
-
+    if limit is None or not limit or limit > len(submissions_list):
+            limit = len(submissions_list)
     for number, submission in enumerate(submissions_list[:limit], start=1):
         submissions_report.append(f'{number}. {submission.title}')
     print('\n'.join(submissions_report))
@@ -84,3 +91,4 @@ def print_reports_slices(
     print_top_authors(submissions_authors_list, limit=slice_size)
     print(f'\n{"-" * 50}\n')
     print_most_active_redditors(comments_authors_list, limit=slice_size)
+    print(f'\n{"-" * 50}\n')
