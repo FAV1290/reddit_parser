@@ -12,6 +12,7 @@ __pycache__
 
 # Data files
 *.txt
+!requirements.txt
 
 
 # Logfiles

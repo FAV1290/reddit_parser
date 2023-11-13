@@ -6,6 +6,6 @@ def parse_control_title() -> str | None:
     if reddit_response.status_code == 200:
         start_point = reddit_response.text.find('post-title="') + 12
         end_point = reddit_response.text.find('"', start_point)
-        return reddit_response.text[start_point : end_point].strip()
+        return reddit_response.text[start_point:end_point].strip()
     else:
         return None
