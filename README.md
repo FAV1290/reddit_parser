@@ -9,7 +9,7 @@
     Simple console parser for reddit, just enter subreddit name and get: 
     <li>Post names wthin last three days (period is customizable)</li>
     <li>Most efficient post starters</li>
-    <li>Most activa comment authors</li>  
+    <li>Most active comment authors</li>  
     <br>
     <p><h2>Requirements</h2></p>
     <p><a href='requirements.txt'>Here they are...</a></p>
